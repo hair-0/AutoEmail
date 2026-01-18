@@ -1,0 +1,8 @@
+# 此项目主要使用Python标准库
+# 如果需要额外依赖，可以在这里添加
+
+# PyInstaller用于打包成exe文件
+pyinstaller>=5.0.0
+
+# openpyxl用于Excel文件导入导出
+openpyxl>=3.0.0

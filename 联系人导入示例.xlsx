@@ -1,0 +1,14 @@
+PK
++++++++ REPLACE
+</diff>
+<task_progress>
+- [x] 查看打包配置
+- [x] 修复标题重叠问题
+- [x] 添加Excel导入功能
+- [x] 改用宋体字体
+- [x] 优化UI边缘圆润效果
+- [x] 更新依赖和打包配置
+- [ ] 创建Excel示例文件
+- [ ] 测试所有功能
+</task_progress>
+</write_to_file>
