@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog, colorchooser
+from PIL import Image, ImageTk
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -42,11 +43,12 @@ class ModernTheme:
     }
     
     FONTS = {
-        "h1": ("Microsoft YaHei", 16, "bold"),
-        "h2": ("Microsoft YaHei", 13, "bold"),
-        "body": ("Microsoft YaHei", 10),
-        "input": ("Microsoft YaHei", 10),
-        "icon": ("Segoe UI Emoji", 12)
+        "h1": ("Microsoft YaHei", 36, "bold"),
+        "h2": ("Microsoft YaHei", 30, "bold"),
+        "h3": ("Microsoft YaHei", 24, "bold"),
+        "body": ("Microsoft YaHei", 55),
+        "input": ("Microsoft YaHei", 55),
+        "icon": ("Segoe UI Emoji", 28)
     }
 
 class ShadowElement(tk.Canvas):
@@ -80,7 +82,7 @@ class ShadowElement(tk.Canvas):
 
 class CapsuleButton(tk.Canvas):
     """胶囊形状的按钮"""
-    def __init__(self, parent, text, command, bg_color=ModernTheme.COLORS["primary"], text_color="white", width=100, height=35):
+    def __init__(self, parent, text, command, bg_color=ModernTheme.COLORS["primary"], text_color="white", width=100, height=105):
         super().__init__(parent, width=width, height=height, bg=parent["bg"], highlightthickness=0)
         self.text = text
         self.command = command
@@ -99,12 +101,12 @@ class CapsuleButton(tk.Canvas):
         self.create_oval(w-h, 0, w, h, fill=self.bg_color, outline="")
         self.create_rectangle(h/2, 0, w-h/2, h, fill=self.bg_color, outline="")
         
-        self.create_text(w/2, h/2, text=self.text, fill=self.text_color, font=("Microsoft YaHei", 10, "bold"))
+        self.create_text(w/2, h/2, text=self.text, fill=self.text_color, font=("Microsoft YaHei", 30, "bold"))
 
 class SidebarButton(tk.Canvas):
     """侧边栏导航按钮"""
     def __init__(self, parent, text, icon, command, is_selected=False):
-        super().__init__(parent, height=55, bg=ModernTheme.COLORS["sidebar_bg"], highlightthickness=0)
+        super().__init__(parent, height=165, bg=ModernTheme.COLORS["sidebar_bg"], highlightthickness=0)
         self.text = text
         self.icon = icon
         self.command = command
@@ -141,11 +143,11 @@ class SidebarButton(tk.Canvas):
         elif self.hovering:
              self.create_polygon(15, 8, w-15, 8, w-15, h-8, 15, h-8, smooth=True, fill=bg, outline="")
 
-        font_size = 11 if self.is_selected else 10
-        icon_size = 14 if self.is_selected else 12
+        font_size = 66 if self.is_selected else 60
+        icon_size = 105 if self.is_selected else 72
         
-        self.create_text(45, h/2, text=self.icon, font=("Segoe UI Emoji", icon_size), fill=fg, anchor="center")
-        self.create_text(75, h/2, text=self.text, font=("Microsoft YaHei", font_size, "bold" if self.is_selected else "normal"), fill=fg, anchor="w")
+        self.create_text(135, h/2, text=self.icon, font=("Segoe UI Emoji", icon_size), fill=fg, anchor="center")
+        self.create_text(225, h/2, text=self.text, font=("Microsoft YaHei", font_size, "bold" if self.is_selected else "normal"), fill=fg, anchor="w")
 
 class ModernEntry(tk.Entry):
     """美化输入框"""
@@ -225,7 +227,7 @@ class EditorToolbar(tk.Frame):
 class EmailSender:
     def __init__(self, root):
         self.root = root
-        self.root.title("Aura Mail Sender v4.0")
+        self.root.title("AutoEmail v4.0")
         self.root.geometry("1300x900")
         self.root.configure(bg=ModernTheme.COLORS["bg_app"])
         
@@ -273,8 +275,22 @@ class EmailSender:
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
         self.sidebar.pack_propagate(False)
         
-        tk.Label(self.sidebar, text="✨ AuraMail", font=("Microsoft YaHei UI", 20, "bold"), 
-                 bg=ModernTheme.COLORS["sidebar_bg"], fg=ModernTheme.COLORS["primary"]).pack(pady=30)
+        # 加载图标
+        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+        if os.path.exists(icon_path):
+            try:
+                icon_image = Image.open(icon_path)
+                icon_image = icon_image.resize((60, 60), Image.Resampling.LANCZOS)
+                icon_photo = ImageTk.PhotoImage(icon_image)
+                icon_label = tk.Label(self.sidebar, image=icon_photo, 
+                                     bg=ModernTheme.COLORS["sidebar_bg"])
+                icon_label.image = icon_photo  # 保持引用防止被垃圾回收
+                icon_label.pack(pady=5)
+            except Exception as e:
+                print(f"加载图标失败: {e}")
+        
+        tk.Label(self.sidebar, text="AutoEmail", font=("Microsoft YaHei UI", 20, "bold"), 
+                 bg=ModernTheme.COLORS["sidebar_bg"], fg=ModernTheme.COLORS["primary"]).pack(pady=10)
         
         self.nav_btns = {}
         self.pages = {}
@@ -343,14 +359,14 @@ class EmailSender:
         card_conf.pack(fill=tk.X, pady=(0, 15))
         c_inner = card_conf.inner_frame
         
-        tk.Label(c_inner, text="⚙️ 发件配置", font=ModernTheme.FONTS["h2"], bg="white", fg=ModernTheme.COLORS["primary"]).pack(anchor="w", pady=(0, 10))
-        tk.Label(c_inner, text="邮箱:", bg="white").pack(anchor="w")
-        self.entry_email = ModernEntry(c_inner); self.entry_email.pack(fill=tk.X, pady=(0, 5))
-        tk.Label(c_inner, text="授权码:", bg="white").pack(anchor="w")
-        self.entry_pwd = ModernEntry(c_inner, show="*"); self.entry_pwd.pack(fill=tk.X, pady=(0, 5))
-        tk.Label(c_inner, text="SMTP:", bg="white").pack(anchor="w")
-        self.entry_smtp = ModernEntry(c_inner); self.entry_smtp.pack(fill=tk.X, pady=(0, 10))
-        CapsuleButton(c_inner, text="保存配置", width=300, height=35, command=self.save_config).pack()
+        tk.Label(c_inner, text="⚙️ 发件配置", font=ModernTheme.FONTS["h3"], bg="white", fg=ModernTheme.COLORS["primary"]).pack(anchor="w", pady=(0, 10))
+        tk.Label(c_inner, text="邮箱:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
+        self.entry_email = ModernEntry(c_inner, font=("Microsoft YaHei", 25)); self.entry_email.pack(fill=tk.X, pady=(0, 8))
+        tk.Label(c_inner, text="授权码:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
+        self.entry_pwd = ModernEntry(c_inner, show="*", font=("Microsoft YaHei", 25)); self.entry_pwd.pack(fill=tk.X, pady=(0, 8))
+        tk.Label(c_inner, text="SMTP:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
+        self.entry_smtp = ModernEntry(c_inner, font=("Microsoft YaHei", 25)); self.entry_smtp.pack(fill=tk.X, pady=(0, 10))
+        CapsuleButton(c_inner, text="保存配置", width=300, height=40, command=self.save_config).pack()
 
         # 附件
         card_attach = ShadowElement(right, radius=15)
@@ -369,8 +385,8 @@ class EmailSender:
         
         btn_row = tk.Frame(a_inner, bg="white")
         btn_row.pack(fill=tk.X, pady=5)
-        tk.Button(btn_row, text="+ 添加", command=self.add_attachment, bg="#ecfccb", fg="#3f6212", relief="flat", width=10).pack(side=tk.LEFT, padx=2)
-        tk.Button(btn_row, text="- 移除", command=self.remove_attachment, bg="#fee2e2", fg="#991b1b", relief="flat", width=10).pack(side=tk.RIGHT, padx=2)
+        tk.Button(btn_row, text="+ 添加", command=self.add_attachment, bg="#ecfccb", fg="#3f6212", relief="flat", width=30, font=("Microsoft YaHei", 30)).pack(side=tk.LEFT, padx=2)
+        tk.Button(btn_row, text="- 移除", command=self.remove_attachment, bg="#fee2e2", fg="#991b1b", relief="flat", width=30, font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT, padx=2)
 
         # 收件人
         card_act = ShadowElement(right, radius=15)
@@ -380,11 +396,11 @@ class EmailSender:
         tk.Label(ac_inner, text="👥 收件人", font=ModernTheme.FONTS["h2"], bg="white", fg=ModernTheme.COLORS["primary"]).pack(anchor="w")
         
         tools = tk.Frame(ac_inner, bg="white"); tools.pack(fill=tk.X, pady=5)
-        tk.Button(tools, text="从通讯录选择 (带搜索)", command=self.open_contact_picker, relief="flat", bg=ModernTheme.COLORS["primary_light"], fg=ModernTheme.COLORS["primary"]).pack(fill=tk.X)
+        tk.Button(tools, text="从通讯录选择 (带搜索)", command=self.open_contact_picker, relief="flat", bg=ModernTheme.COLORS["primary_light"], fg=ModernTheme.COLORS["primary"], font=("Microsoft YaHei", 30)).pack(fill=tk.X)
         
-        self.list_rcpt = tk.Listbox(ac_inner, height=6, relief="flat", bg="#f9fafb", font=("Microsoft YaHei", 10))
+        self.list_rcpt = tk.Listbox(ac_inner, height=6, relief="flat", bg="#f9fafb", font=("Microsoft YaHei", 25))
         self.list_rcpt.pack(fill=tk.BOTH, expand=True, pady=5)
-        tk.Button(ac_inner, text="清空列表", command=lambda: self.list_rcpt.delete(0, tk.END), relief="flat", fg="red", bg="white").pack(anchor="e")
+        tk.Button(ac_inner, text="清空列表", command=lambda: self.list_rcpt.delete(0, tk.END), relief="flat", fg="red", bg="white", font=("Microsoft YaHei", 30)).pack(anchor="e")
         
         CapsuleButton(ac_inner, text="🚀 加入发送队列", width=300, height=45, command=self.add_to_queue).pack(side=tk.BOTTOM, pady=10)
 
@@ -395,8 +411,8 @@ class EmailSender:
         
         top = tk.Frame(inner, bg="white"); top.pack(fill=tk.X, pady=10)
         tk.Label(top, text="发送队列 (30s 缓冲)", font=ModernTheme.FONTS["h1"], bg="white").pack(side=tk.LEFT)
-        tk.Button(top, text="⚡ 立即发送", command=self.force_send_all, bg=ModernTheme.COLORS["success"], fg="white", relief="flat", padx=15).pack(side=tk.RIGHT, padx=5)
-        tk.Button(top, text="↩️ 撤回", command=self.withdraw_email, bg=ModernTheme.COLORS["danger"], fg="white", relief="flat", padx=15).pack(side=tk.RIGHT)
+        tk.Button(top, text="⚡ 立即发送", command=self.force_send_all, bg=ModernTheme.COLORS["success"], fg="white", relief="flat", padx=45, font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT, padx=5)
+        tk.Button(top, text="↩️ 撤回", command=self.withdraw_email, bg=ModernTheme.COLORS["danger"], fg="white", relief="flat", padx=45, font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT)
         
         self.tree_queue = ttk.Treeview(inner, columns=("ID", "收件人", "邮箱", "倒计时", "状态"), show="headings")
         for c in ("ID", "收件人", "邮箱", "倒计时", "状态"): self.tree_queue.heading(c, text=c)
@@ -408,11 +424,12 @@ class EmailSender:
         inner = card.inner_frame
         
         bar = tk.Frame(inner, bg="white"); bar.pack(fill=tk.X, pady=10)
-        self.entry_search = ModernEntry(bar, width=30); self.entry_search.pack(side=tk.LEFT, padx=5)
-        tk.Button(bar, text="搜索", command=self.search_contacts, bg=ModernTheme.COLORS["primary"], fg="white", relief="flat").pack(side=tk.LEFT)
+        self.entry_search = ModernEntry(bar, width=30, font=("Microsoft YaHei", 25)); self.entry_search.pack(side=tk.LEFT, padx=5)
+        tk.Button(bar, text="搜索", command=self.search_contacts, bg=ModernTheme.COLORS["primary"], fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.LEFT)
         
-        tk.Button(bar, text="导入Excel", command=self.import_excel, bg="#0ea5e9", fg="white", relief="flat").pack(side=tk.RIGHT, padx=5)
-        tk.Button(bar, text="新建", command=self.add_contact_dialog, bg=ModernTheme.COLORS["success"], fg="white", relief="flat").pack(side=tk.RIGHT)
+        tk.Button(bar, text="删除", command=self.delete_contact, bg="red", fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT, padx=5)
+        tk.Button(bar, text="导入Excel", command=self.import_excel, bg="#0ea5e9", fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT, padx=5)
+        tk.Button(bar, text="新建", command=self.add_contact_dialog, bg=ModernTheme.COLORS["success"], fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT)
         
         self.tree_contacts = ttk.Treeview(inner, columns=("ID", "姓名", "邮箱", "职称", "院系"), show="headings")
         for c in ("ID", "姓名", "邮箱", "职称", "院系"): self.tree_contacts.heading(c, text=c)
@@ -426,8 +443,8 @@ class EmailSender:
         
         top = tk.Frame(inner, bg="white"); top.pack(fill=tk.X, pady=10)
         # 注意：这里调用的是新的对话框方法
-        tk.Button(top, text="新建模板", command=self.new_template_dialog, bg=ModernTheme.COLORS["primary"], fg="white", relief="flat").pack(side=tk.LEFT)
-        tk.Button(top, text="删除", command=self.del_template, bg="red", fg="white", relief="flat").pack(side=tk.RIGHT)
+        tk.Button(top, text="新建模板", command=self.new_template_dialog, bg=ModernTheme.COLORS["primary"], fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.LEFT)
+        tk.Button(top, text="删除", command=self.del_template, bg="red", fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(side=tk.RIGHT)
         
         self.tree_tmpl = ttk.Treeview(inner, columns=("ID", "名称", "主题"), show="headings")
         self.tree_tmpl.heading("ID", text="ID"); self.tree_tmpl.heading("名称", text="名称"); self.tree_tmpl.heading("主题", text="主题")
@@ -439,7 +456,7 @@ class EmailSender:
         card = ShadowElement(parent, radius=15)
         card.pack(fill=tk.BOTH, expand=True)
         inner = card.inner_frame
-        tk.Button(inner, text="清空历史", command=self.clear_history, bg="red", fg="white", relief="flat").pack(anchor="e", pady=10)
+        tk.Button(inner, text="清空历史", command=self.clear_history, bg="red", fg="white", relief="flat", font=("Microsoft YaHei", 30)).pack(anchor="e", pady=10)
         self.tree_hist = ttk.Treeview(inner, columns=("收件人", "邮箱", "主题", "时间", "状态"), show="headings")
         for c in ("收件人", "邮箱", "主题", "时间", "状态"): self.tree_hist.heading(c, text=c)
         self.tree_hist.pack(fill=tk.BOTH, expand=True)
@@ -650,13 +667,13 @@ class EmailSender:
         inner = card.inner_frame
         
         # 标题栏
-        tk.Label(inner, text="模板名称:", bg="white").pack(anchor="w")
-        entry_name = ModernEntry(inner, width=40); entry_name.pack(fill=tk.X, pady=(0, 10))
+        tk.Label(inner, text="模板名称:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
+        entry_name = ModernEntry(inner, width=40, font=("Microsoft YaHei", 25)); entry_name.pack(fill=tk.X, pady=(0, 10))
         
-        tk.Label(inner, text="邮件主题:", bg="white").pack(anchor="w")
-        entry_subject = ModernEntry(inner, width=40); entry_subject.pack(fill=tk.X, pady=(0, 10))
+        tk.Label(inner, text="邮件主题:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
+        entry_subject = ModernEntry(inner, width=40, font=("Microsoft YaHei", 25)); entry_subject.pack(fill=tk.X, pady=(0, 10))
         
-        tk.Label(inner, text="正文内容:", bg="white").pack(anchor="w")
+        tk.Label(inner, text="正文内容:", bg="white", font=ModernTheme.FONTS["body"]).pack(anchor="w")
         
         # 引入工具栏
         editor_frame = tk.Frame(inner, bg="white", highlightthickness=1, highlightbackground="#e5e7eb")
@@ -700,7 +717,7 @@ class EmailSender:
         d = tk.Toplevel(self.root); d.geometry("300x250")
         f = {}
         for k in ["姓名","邮箱","职称","院系"]:
-            tk.Label(d, text=k).pack(); e = tk.Entry(d); e.pack(); f[k] = e
+            tk.Label(d, text=k, font=ModernTheme.FONTS["body"]).pack(); e = tk.Entry(d, font=("Microsoft YaHei", 25)); e.pack(); f[k] = e
         def s():
             conn = sqlite3.connect(self.db_path)
             conn.execute("INSERT INTO contacts (name,email,title,department) VALUES (?,?,?,?)", 
@@ -727,6 +744,23 @@ class EmailSender:
         for r in conn.execute("SELECT * FROM contacts WHERE name LIKE ? OR email LIKE ?", (f"%{q}%", f"%{q}%")):
             self.tree_contacts.insert("", tk.END, values=r)
         conn.close()
+
+    def delete_contact(self):
+        """删除选中的联系人"""
+        sel = self.tree_contacts.selection()
+        if not sel:
+            messagebox.showwarning("提示", "请先选择要删除的联系人")
+            return
+        
+        if messagebox.askyesno("确认删除", "确定要删除选中的联系人吗？"):
+            conn = sqlite3.connect(self.db_path)
+            for item in sel:
+                cid = self.tree_contacts.item(item)['values'][0]
+                conn.execute("DELETE FROM contacts WHERE id=?", (cid,))
+            conn.commit()
+            conn.close()
+            self.refresh_contacts()
+            messagebox.showinfo("成功", "联系人已删除")
 
     def refresh_tmpl_tree(self):
         for i in self.tree_tmpl.get_children(): self.tree_tmpl.delete(i)
